@@ -4,7 +4,6 @@ import binascii
 import sys
 
 class hashStore:
-
     def __init__(self):
         self.power = 3
         self.keysCount = 0
@@ -101,6 +100,11 @@ class hashStore:
         index = self.lookup(hashValue,key)
         return self.table[index].value
 
+    def delete(self,key):
+        hashValue = self.Murmur(key)
+        index = self.lookup(hashValue,key)
+        self.table[index] = None
+
     def lookup(self,hashValue,key):
         index = hashValue % (2**self.power)
         if self.table[index] is None:
@@ -141,4 +145,5 @@ ptolemy.set("minions","conquer")
 ptolemy.set("trains","chill")
 print(ptolemy.get("cats"))
 print(ptolemy.get("trains"))
+ptolemy.delete("cows")
 print(ptolemy.keys())
