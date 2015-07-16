@@ -51,8 +51,8 @@ long long unsigned traverse(char* path)
     while(1) {
         mystruct = readdir(wa);
         if (mystruct == NULL) {
+            //closedir(wa);
             break;
-            closedir(wa);
         }
         char *filename = mystruct->d_name;
         if(strcmp("..",filename) == 0)
