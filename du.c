@@ -9,8 +9,8 @@
 
 long long unsigned traverse(char*);
 
-int checkifdir(mode_t str){
-    if((str & S_IFMT) == S_IFDIR)
+int checkifdir(mode_t mystr){
+    if((mystr & S_IFMT) == S_IFDIR)
         return 1;
     return 0;
 }
@@ -44,6 +44,7 @@ long long unsigned sizeparser(long long unsigned arg)
 
 long long unsigned traverse(char* path)
 {
+    printf("%s \t",path);
     DIR *wa = opendir(path);
     struct dirent *mystruct = NULL;
     struct stat mystat;
@@ -51,14 +52,18 @@ long long unsigned traverse(char* path)
     while(1) {
         mystruct = readdir(wa);
         if (mystruct == NULL) {
-            //closedir(wa);
+            closedir(wa);
             break;
         }
         char *filename = mystruct->d_name;
         if(strcmp("..",filename) == 0)
             continue;
         //get full path
-        char *str = malloc(strlen(filename)+strlen(path)+2);
+        char *str = NULL;
+        // Use calloc or this :)
+        int size = strlen(filename)+strlen(path)+10;
+        str = malloc(size);
+        bzero(str,size);
         strcat(str,path);
         strcat(str,"/");
         strcat(str,filename);
@@ -69,16 +74,19 @@ long long unsigned traverse(char* path)
             if (strcmp(".",filename) == 0){
                 actualsize = sizeparser(mystat.st_size);
                 dirsize +=actualsize;
+                free(str);
                 continue;
             }
             returnval = traverse(str);
             dirsize += returnval;
             //printf("%s\t%llu\n",str,returnval/1024);
+            free(str);
             continue;
         }
         actualsize = sizeparser(mystat.st_size);
         //printf("%llu\n",actualsize/1025);
         dirsize +=actualsize;
+        free(str);
     }
     return dirsize;
 }
