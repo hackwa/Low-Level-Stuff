@@ -71,6 +71,13 @@ task default_task = {
 // Scheduler is called whenever any event happens related to currently running task 
 // or if the timer runs out
 
+int _checkready(task *pr){
+    if (pr->state == WAITING || pr->state == BLOCKED && pr->event == EV_RESOURCE_AVAILABLE)
+        {return 1;}
+    else
+        {return 0;}
+}
+
 task* scheduler(task *running) {
  if (running->event == EV_TIMEOUT) 
  {
@@ -90,30 +97,56 @@ task* scheduler(task *running) {
   // Find next higherst priority waiting task
   // We could use priority queue here but for the sake of simplicity
   // we can hardcode the priorities
-  if (task1.state == WAITING || task1.state == BLOCKED && task1.event == EV_RESOURCE_AVAILABLE) 
+  task *ret;
+  if (running->id == 1)
   {
-       task1.state = RUNNING;
-       task1.event = ANY;
-       return &task1;
+      if (_checkready(&task2))
+      {ret  = &task2;}
+      else
+      if (_checkready(&task3))
+      {ret  = &task3;}
+      else
+      if (_checkready(&task1))
+      {ret  = &task1;}
+      else
+          {return &default_task;}
   }
   else
 
-  if (task2.state == WAITING || task2.state == BLOCKED && task2.event == EV_RESOURCE_AVAILABLE) 
+  if (running->id == 2)
   {
-       task2.state = RUNNING;
-       task2.event = ANY;
-       return &task2;
+      if (_checkready(&task3))
+      {ret  = &task3;}
+      else
+      if (_checkready(&task1))
+      {ret  = &task1;}
+      else
+      if (_checkready(&task2))
+      {ret  = &task2;}
+      else
+          {return &default_task;}
   }
   else
 
-  if (task3.state == WAITING || task3.state == BLOCKED && task3.event == EV_RESOURCE_AVAILABLE) 
+  if (running->id == 3)
   {
-       task3.state = RUNNING;
-       task3.event = ANY;
-       return &task3;
+      if (_checkready(&task1))
+      {ret  = &task1;}
+      else
+      if (_checkready(&task2))
+      {ret  = &task2;}
+      else
+      if (_checkready(&task3))
+      {ret  = &task3;}
+      else
+          {return &default_task;}
   }
+
   else
       return &default_task;
+
+  ret->state = RUNNING;
+  return ret;
 }
 
 void getstate(task pr){
