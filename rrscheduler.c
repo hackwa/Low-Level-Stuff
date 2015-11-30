@@ -1,5 +1,11 @@
 #include <stdio.h>
 
+/*
+Author: Anurag Dubey
+Class: Advanced Embedded Architecure
+Topic: An exaple RR scheduler for 3 tasks
+*/
+
 #define RUNNING 2
 #define BLOCKED 1
 #define WAITING 0
@@ -30,7 +36,6 @@ typedef struct {
     int event;
     int timer;
     int resource;
-    int priority;
 } task;
 
 task task1 = {
@@ -39,7 +44,6 @@ task task1 = {
     .event = ANY,
     .timer = TIMER_X,
     .resource = RESOURCE_A,
-    .priority = PR_HIGH
 };
 task task2 = {
     .id = 2,
@@ -47,7 +51,6 @@ task task2 = {
     .event = ANY,
     .timer = TIMER_Y,
     .resource = RESOURCE_B,
-    .priority = PR_MED
 };
 task task3 = {
     .id = 3,
@@ -55,7 +58,6 @@ task task3 = {
     .event = ANY,
     .timer = TIMER_Z,
     .resource = RESOURCE_C,
-    .priority = PR_LOW
 };
 
 task default_task = {
@@ -64,7 +66,6 @@ task default_task = {
     .event = ANY,
     .timer = ANY,
     .resource = ANY,
-    .priority = ANY
 };
 
 // Scheduler is called whenever any event happens related to currently running task 

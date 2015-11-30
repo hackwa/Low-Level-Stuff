@@ -1,5 +1,11 @@
 #include <stdio.h>
 
+/*
+Author: Anurag Dubey
+Class: Advanced Embedded Architecture
+Topic: An Example priority scheduler for 3 tasks
+*/
+
 #define RUNNING 2
 #define BLOCKED 1
 #define WAITING 0
