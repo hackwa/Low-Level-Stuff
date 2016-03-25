@@ -6,16 +6,20 @@ char *source = "./instructions";
 
 int main()
 {
-	omp_set_num_threads(5);
-	char *current_instruction = NULL;
-	instruction decoded;
-	int result = -1
 	FILE * fp = fopen(source, "r");
 	if (fp == NULL)
 	{
 		printf("Can't find input file!\n");
 		return 1;
 	}
+
+	instruction *fetch;
+	instruction *decode;
+	instruction *execute;
+	instruction *memory_accesse;
+	instruction *writeback;
+
+	omp_set_num_threads(5);
 	#pragma omp parallel
 	{
 	int id=omp_get_thread_num();
@@ -23,15 +27,15 @@ int main()
 	printf("World(%d)\n",id);
 	switch(id)
 	{
-		case 0: issue();
+		case 0: cpu_issue();
 			break;
-		case 1: decode();
+		case 1: cpu_decode();
 			break;
-		case 2: execute();
+		case 2: cpu_execute();
 			break;
-		case 3: memory_access();
+		case 3: cpu_memory_access();
 			break;
-		case 4: writeback();
+		case 4: cpu_writeback();
 			break;
 		default: printf("This should not get executed");
 	}
@@ -39,23 +43,23 @@ int main()
 	return 0;
 }
 
-void issue()
+void cpu_issue()
 {
 	printf("issue\n");
 }
-void decode()
+void cpu_decode()
 {
 	printf("decode\n");
 }
-void execute()
+void cpu_execute()
 {
 	printf("execute\n");
 }
-void memory_access()
+void cpu_memory_access()
 {
 	printf("memory_access\n");
 }
-void writeback()
+void cpu_writeback()
 {
 	printf("writeback");
 }
