@@ -29,6 +29,7 @@ typedef struct {
 	int op2;
 	int address;
 	int result;
+	int valid;
 } instruction;
 
 void cpu_clock();
