@@ -1,3 +1,4 @@
-LDA R1, bf
-LDA R2, cf
+LDA R1 bf
+LDA R2 cf
 ADD R3 R1 R2
+STA 

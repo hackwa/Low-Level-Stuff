@@ -1,4 +1,11 @@
+#include "time.h"
+
 #define PIPELINE_DEPTH 5
+
+//Clock
+#define CLK_HIGH 1
+#define CLK_LOW 0
+#define CLK_HALT 3
 
 //Operations
 #define LDA 0
@@ -30,3 +37,8 @@ void cpu_decode(instruction*,instruction*);
 void cpu_execute(instruction*, instruction*);
 void cpu_memory_access(instruction*, instruction*);
 void cpu_writeback(instruction*, instruction*);
+
+struct timespec clockspec ={
+.tv_sec = 0,
+.tv_nsec = 100000000
+};

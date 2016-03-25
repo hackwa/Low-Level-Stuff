@@ -1,9 +1,10 @@
-#include<stdio.h>
+#include "stdio.h"
 #include "omp.h"
 #include "pipeline.h"
+#include "unistd.h"
 
 char *source = "./instructions";
-int clock = 0;
+int clock_signal = CLK_LOW;
 int halt =0;
 
 int main()
@@ -20,6 +21,7 @@ int main()
 	instruction *execute;
 	instruction *memory_access;
 	instruction *writeback;
+	int registers[3];
 
 	omp_set_num_threads(6);
 	#pragma omp parallel
@@ -47,18 +49,18 @@ int main()
 	return 0;
 }
 
-// Stop clock 5 cycles after halt is Issued 
+// Stop clock PIPELINE_DEPTH cycles after halt is Issued 
 void cpu_clock(){
 	int ctr = 0;
 	while(1)
 	{
-		for(int i=10000;i>0;i--)
-			for(int j=10000; j>0;j--);
-		clock = clock ^ 1;
-		printf("clock %d\n",clock);
-		if (halt == 1 && ctr++ == PIPELINE_DEPTH)
+		nanosleep(&clockspec,NULL);
+		clock_signal = clock_signal ^ 1;
+		printf("clock %d\n",clock_signal);
+		if (halt == 1 && ctr++ == 2*PIPELINE_DEPTH)
 			break;
 	}
+	clock_signal = CLK_HALT;
 }
 
 void cpu_issue(FILE *fp, instruction *issue){
@@ -67,24 +69,33 @@ void cpu_issue(FILE *fp, instruction *issue){
 	issue = &issued;
 	while(1)
 	{
-		if(clock == 1 && flag == 1){
+		if(clock_signal == CLK_HIGH && flag == 1){
 		if(fgets(issued.string,sizeof(issued.string),fp)== NULL) break;
 		printf("%s",issued.string);
 		flag = 0;
+		nanosleep(&clockspec,NULL);
 		}
 		else 
-		if (clock == 0){
+// Decode shouldn't start until next instruction is issued
+		if (clock_signal == CLK_LOW){
 			issue = NULL;
 			flag =1;
+			nanosleep(&clockspec,NULL);
 		}
 	}
 	halt = 1;
-	printf("issue\n");
+	printf("Halting Pipeline in %d cycles\n",PIPELINE_DEPTH);
 }
 
 void cpu_decode(instruction* decode, instruction* issue){
-	int ctr = 0;
-	printf("decode\n");
+	int flag = 0;
+	printf("decoding..\n");
+	instruction decoded;
+	decode = &decoded;
+	while(0)
+	{
+		if(clock_signal == CLK_HIGH && issue != NULL);
+	}
 }
 
 void cpu_execute(instruction* execute, instruction* decode){
