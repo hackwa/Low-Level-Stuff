@@ -1,4 +1,8 @@
 #include "time.h"
+#include "string.h"
+
+int R0=0,R1=0,R2=0;
+int MEMORY[10];
 
 #define PIPELINE_DEPTH 5
 
@@ -13,21 +17,12 @@
 #define ADD 2
 #define SUB 3
 
-
-//Registers
-#define R0 0
-#define R1 1
-#define R2 2
-
-
 typedef struct {
 	char string[20];
 	int type;
-	int src;
-	int dst;
-	int op1;
-	int op2;
-	int address;
+	int * src1;
+	int * src2;
+	int * dst;
 	int result;
 	int valid;
 } instruction;
@@ -43,3 +38,48 @@ struct timespec clockspec ={
 .tv_sec = 0,
 .tv_nsec = 100000000
 };
+
+int * extract_register(char* input)
+{
+	if (strncasecmp(input, "r0", 2) == 0)
+	{
+		printf("extracted R0\n");
+		return &R0;
+	}
+	if (strncasecmp(input, "r1", 2) == 0)
+	{
+		printf("extracted R1\n");
+		return &R1;
+	}
+	if (strncasecmp(input, "r2", 2) == 0)
+	{
+		printf("extracted R2\n");
+		return &R2;
+	}
+	return NULL;
+}
+
+int extract_type(char* input)
+{
+	if (strncasecmp(input, "lda", 3) == 0)
+	{
+		printf("lda was here\n");
+		return LDA;
+	}
+	if (strncasecmp(input, "sta", 3) == 0)
+	{
+		printf("sta was here\n");
+		return STA;
+	}
+	if (strncasecmp(input, "add", 3) == 0)
+	{
+		printf("add was here\n");
+		return ADD;
+	}
+	if (strncasecmp(input, "sub", 3) == 0)
+	{
+		printf("sub was here\n");
+		return SUB;
+	}
+	return -1;
+}

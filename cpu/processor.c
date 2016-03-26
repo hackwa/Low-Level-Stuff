@@ -22,7 +22,6 @@ int main()
 	instruction execute;
 	instruction memory_access;
 	instruction writeback;
-	int registers[3];
 
 	omp_set_num_threads(6);
 	#pragma omp parallel
@@ -71,7 +70,7 @@ void cpu_issue(FILE *fp, instruction *issue){
 		if(clock_signal == CLK_HIGH && flag == 1){
 		if(fgets(issue->string,sizeof(issue->string),fp)== NULL) break;
 		issue-> valid = 1;
-		printf("%s",issue->string);
+		//printf("%s",issue->string);
 		flag = 0;
 		nanosleep(&clockspec,NULL);
 		}
@@ -89,18 +88,22 @@ void cpu_issue(FILE *fp, instruction *issue){
 
 void cpu_decode(instruction* decode, instruction* issue){
 	int flag = 0;
+	char *extracted;
 	while(1)
 	{
 		if(clock_signal == CLK_HALT)break;
 
 		if(clock_signal == CLK_HIGH && issue->valid == 1){			
-			printf("decoding: %s\n",issue->string);
+			printf("decoding: %s",issue->string);
 			decode -> valid = 1;
-			decode-> string = issue ->string
+			extracted = strtok(issue->string," ");
+			decode->type = extract_type(extracted);
+
 			issue -> valid = 0;
 			nanosleep(&clockspec,NULL);
 		}
 		else
+		if(clock_signal == CLK_LOW )
 			nanosleep(&clockspec,NULL);
 
 	}
