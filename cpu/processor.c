@@ -2,7 +2,7 @@
 #include "omp.h"
 #include "pipeline.h"
 #include "unistd.h"
-#include "string.h"
+#include "stdlib.h"
 
 char *source = "./instructions";
 int clock_signal = CLK_LOW;
@@ -98,12 +98,27 @@ void cpu_decode(instruction* decode, instruction* issue){
 			decode -> valid = 1;
 			extracted = strtok(issue->string," ");
 			decode->type = extract_type(extracted);
-
+			extracted = strtok(NULL," ");
+			decode->dst = extract_register(extracted);
+			extracted = strtok(NULL," ");
+			if (decode->type == LDA || decode->type == STA)
+			{
+				decode->address = atoi(extracted);
+				//printf("decoded address:%d",decode->address);
+			}
+			else
+			if (decode->type == ADD || decode->type == SUB)
+			{
+			decode->src1 = extract_register(extracted);
+			extracted = strtok(NULL," ");
+			decode->src2 = extract_register(extracted);
+			}
 			issue -> valid = 0;
 			nanosleep(&clockspec,NULL);
 		}
 		else
 		if(clock_signal == CLK_LOW )
+			decode-> valid = 0;
 			nanosleep(&clockspec,NULL);
 
 	}

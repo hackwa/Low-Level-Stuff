@@ -1,7 +1,7 @@
 #include "time.h"
 #include "string.h"
 
-int R0=0,R1=0,R2=0;
+int R0=0,R1=0,R2=0,R3=0;
 int MEMORY[10];
 
 #define PIPELINE_DEPTH 5
@@ -23,6 +23,7 @@ typedef struct {
 	int * src1;
 	int * src2;
 	int * dst;
+	int address;
 	int result;
 	int valid;
 } instruction;
@@ -41,6 +42,7 @@ struct timespec clockspec ={
 
 int * extract_register(char* input)
 {
+	if (input == NULL) return NULL;
 	if (strncasecmp(input, "r0", 2) == 0)
 	{
 		printf("extracted R0\n");
@@ -55,6 +57,11 @@ int * extract_register(char* input)
 	{
 		printf("extracted R2\n");
 		return &R2;
+	}
+	if (strncasecmp(input, "r3", 2) == 0)
+	{
+		printf("extracted R3\n");
+		return &R3;
 	}
 	return NULL;
 }
