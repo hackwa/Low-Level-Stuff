@@ -1,10 +1,12 @@
 #include "time.h"
 #include "string.h"
 
-int R0=0,R1=10,R2=0,R3=0;
-int MEMORY[10];
+#define MEMSIZE 10
 
-#define PIPELINE_DEPTH 5
+int R0=0,R1=10,R2=0,R3=0;
+int MEMORY[MEMSIZE]={0};
+
+#define PIPELINE_DEPTH 4
 
 //Clock
 #define CLK_HIGH 1
@@ -32,8 +34,7 @@ void cpu_clock();
 void cpu_issue(FILE*,instruction*);
 void cpu_decode(instruction*,instruction*);
 void cpu_execute(instruction*, instruction*);
-void cpu_memory_access(instruction*, instruction*);
-void cpu_writeback(instruction*, instruction*);
+void cpu_data_access(instruction*);
 
 struct timespec clockspec ={
 .tv_sec = 0,

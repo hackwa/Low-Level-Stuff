@@ -4,6 +4,8 @@
 #include "unistd.h"
 #include "stdlib.h"
 
+// ARM like instruction set
+
 char *source = "./instructions";
 int clock_signal = CLK_LOW;
 int halt =0;
@@ -20,15 +22,11 @@ int main()
 	instruction issue;
 	instruction decode;
 	instruction execute;
-	instruction memory_access;
-	instruction writeback;
 
 	omp_set_num_threads(6);
 	#pragma omp parallel
 	{
 	int id=omp_get_thread_num();
-	//printf("Hello(%d)",id);
-	//printf("World(%d)\n",id);
 	switch(id)
 	{
 		case 0: cpu_clock();
@@ -39,13 +37,18 @@ int main()
 			break;
 		case 3: cpu_execute(&execute,&decode);
 			break;
-		case 4: cpu_memory_access(&memory_access,&execute);
-			break;
-		case 5: cpu_writeback(&writeback,&execute);
+			// Registers and memory access in one step
+		case 4: cpu_data_access(&execute);
 			break;
 		default: printf("This should not get executed");
 	}
 	}
+	printf("Execution Complete..CPU and Memory State:\n");
+	printf("R0: %d\tR1: %d\tR2: %d\tR3: %d\n",R0,R1,R2,R3);
+	printf("Memory:\n");
+	for(int i=0;i<MEMSIZE;i++)
+		printf("%d  ",MEMORY[i]);
+	printf("\n");
 	return 0;
 }
 
@@ -87,7 +90,6 @@ void cpu_issue(FILE *fp, instruction *issue){
 }
 
 void cpu_decode(instruction* decode, instruction* issue){
-	int flag = 0;
 	char *extracted;
 	while(1)
 	{
@@ -124,24 +126,23 @@ void cpu_decode(instruction* decode, instruction* issue){
 }
 
 void cpu_execute(instruction* execute, instruction* decode){
-	int ctr = 0;
 	printf("execute\n");
 	while(1){
 		if(clock_signal == CLK_HALT)break;
 		if(clock_signal == CLK_HIGH && decode->valid == 1){			
 		execute->type = decode-> type;
+		execute-> dst = decode-> dst;
 		switch(decode->type)
 		{
 			case LDA: 	execute->address = decode->address;break;
 			case STA: 	execute->address = decode->address; break;
 			case ADD: 	printf("Adding %d and %d\n",*(decode->src1),*(decode->src2));
 					execute-> result = *(decode->src1) + *(decode-> src2);
-					execute-> dst = decode-> dst;
+					break;
 			case SUB: 	printf("Subtracting %d from %d\n",*(decode->src1),*(decode->src2));
 					execute-> result = *(decode->src1) - *(decode-> src2);
-					execute-> dst = decode-> dst;
-			default:	printf("Error in execution;");
 					break;
+			default:	printf("Error in execution;");
 		}
 		execute-> valid = 1;
 		decode->valid = 0;
@@ -153,12 +154,21 @@ void cpu_execute(instruction* execute, instruction* decode){
 	}
 }
 
-void cpu_memory_access(instruction* memory_access, instruction* execute){
-	int ctr = 0;
-	printf("memory_access\n");
+void cpu_data_access(instruction* execute){
+	printf("data_access\n");
+	while(1){
+		if(clock_signal == CLK_HALT)break;
+		if(clock_signal == CLK_HIGH && execute->valid == 1){			
+		switch(execute->type)
+		{
+			case LDA:	*(execute->dst) = MEMORY[execute->address];break;
+			case STA: 	MEMORY[execute->address] = *(execute->dst);break;
+			case ADD:	*(execute->dst) = execute->result;break;
+			case SUB:	*(execute->dst) = execute->result;break;
+			default:	printf("This should not happen");
+		}
+
+		}
+	}
 }
 
-void cpu_writeback(instruction* writeback, instruction* execute){
-	int ctr = 0;
-	printf("writeback");
-}
