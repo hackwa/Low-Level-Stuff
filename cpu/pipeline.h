@@ -1,10 +1,11 @@
 #include "time.h"
 #include "string.h"
+#include "stdint.h"
 
 #define MEMSIZE 10
 
-int R0=0,R1=10,R2=0,R3=0;
-int MEMORY[MEMSIZE]={0};
+uint32_t R0=0,R1=0,R2=0,R3=0;
+uint32_t MEMORY[MEMSIZE]={0};
 
 #define PIPELINE_DEPTH 4
 
@@ -18,6 +19,7 @@ int MEMORY[MEMSIZE]={0};
 #define STA 1
 #define ADD 2
 #define SUB 3
+#define MVI 4
 
 typedef struct {
 	char string[20];
@@ -45,49 +47,29 @@ int * extract_register(char* input)
 {
 	if (input == NULL) return NULL;
 	if (strncasecmp(input, "r0", 2) == 0)
-	{
-		printf("extracted R0\n");
 		return &R0;
-	}
 	if (strncasecmp(input, "r1", 2) == 0)
-	{
-		printf("extracted R1\n");
 		return &R1;
-	}
 	if (strncasecmp(input, "r2", 2) == 0)
-	{
-		printf("extracted R2\n");
 		return &R2;
-	}
 	if (strncasecmp(input, "r3", 2) == 0)
-	{
-		printf("extracted R3\n");
 		return &R3;
-	}
+	printf("ERR: error in register extraction\n");
 	return NULL;
 }
 
 int extract_type(char* input)
 {
 	if (strncasecmp(input, "lda", 3) == 0)
-	{
-		printf("lda was here\n");
 		return LDA;
-	}
 	if (strncasecmp(input, "sta", 3) == 0)
-	{
-		printf("sta was here\n");
 		return STA;
-	}
 	if (strncasecmp(input, "add", 3) == 0)
-	{
-		printf("add was here\n");
 		return ADD;
-	}
 	if (strncasecmp(input, "sub", 3) == 0)
-	{
-		printf("sub was here\n");
 		return SUB;
-	}
+	if (strncasecmp(input, "mvi", 3) == 0)
+		return MVI;
+	printf("ERR: error in type extraction\n");
 	return -1;
 }

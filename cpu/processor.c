@@ -5,6 +5,7 @@
 #include "stdlib.h"
 
 // ARM like instruction set
+// Be careful of Hazards!
 
 char *source = "./instructions";
 int clock_signal = CLK_LOW;
@@ -23,7 +24,7 @@ int main()
 	instruction decode;
 	instruction execute;
 
-	omp_set_num_threads(6);
+	omp_set_num_threads(5);
 	#pragma omp parallel
 	{
 	int id=omp_get_thread_num();
@@ -40,7 +41,7 @@ int main()
 			// Registers and memory access in one step
 		case 4: cpu_data_access(&execute);
 			break;
-		default: printf("This should not get executed");
+		default: printf("Recheck the number of threads");
 	}
 	}
 	printf("Execution Complete..CPU and Memory State:\n");
@@ -114,6 +115,11 @@ void cpu_decode(instruction* decode, instruction* issue){
 			extracted = strtok(NULL," ");
 			decode->src2 = extract_register(extracted);
 			}
+			else
+			if(decode->type == MVI)
+			{
+				decode -> result = atoi(extracted);
+			}
 			issue -> valid = 0;
 			decode -> valid = 1;
 			nanosleep(&clockspec,NULL);
@@ -136,13 +142,14 @@ void cpu_execute(instruction* execute, instruction* decode){
 		{
 			case LDA: 	execute->address = decode->address;break;
 			case STA: 	execute->address = decode->address; break;
+			case MVI:	execute-> result = decode -> result;break;
 			case ADD: 	printf("Adding %d and %d\n",*(decode->src1),*(decode->src2));
 					execute-> result = *(decode->src1) + *(decode-> src2);
 					break;
 			case SUB: 	printf("Subtracting %d from %d\n",*(decode->src1),*(decode->src2));
 					execute-> result = *(decode->src1) - *(decode-> src2);
 					break;
-			default:	printf("Error in execution;");
+			default:	printf("ERR: Error in execution;%d",decode->type);
 		}
 		execute-> valid = 1;
 		decode->valid = 0;
@@ -165,8 +172,10 @@ void cpu_data_access(instruction* execute){
 			case STA: 	MEMORY[execute->address] = *(execute->dst);break;
 			case ADD:	*(execute->dst) = execute->result;break;
 			case SUB:	*(execute->dst) = execute->result;break;
-			default:	printf("This should not happen");
+			case MVI:	*(execute->dst) = execute->result;break;
+			default:	printf("ERR: This should not happen");
 		}
+		execute->valid=0;
 
 		}
 	}
