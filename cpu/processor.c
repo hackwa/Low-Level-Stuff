@@ -176,7 +176,7 @@ void cpu_data_access(instruction* execute){
 			default:	printf("ERR: This should not happen");
 		}
 		execute->valid=0;
-
+		nanosleep(&clockspec,NULL);
 		}
 	}
 }

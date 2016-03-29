@@ -24,11 +24,11 @@ uint32_t MEMORY[MEMSIZE]={0};
 typedef struct {
 	char string[20];
 	int type;
-	int * src1;
-	int * src2;
-	int * dst;
+	uint32_t * src1;
+	uint32_t * src2;
+	uint32_t * dst;
 	int address;
-	int result;
+	uint32_t result;
 	int valid;
 } instruction;
 
