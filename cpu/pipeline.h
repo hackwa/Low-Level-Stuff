@@ -1,7 +1,7 @@
 #include "time.h"
 #include "string.h"
 
-int R0=0,R1=0,R2=0,R3=0;
+int R0=0,R1=10,R2=0,R3=0;
 int MEMORY[10];
 
 #define PIPELINE_DEPTH 5

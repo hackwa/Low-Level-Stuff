@@ -95,7 +95,6 @@ void cpu_decode(instruction* decode, instruction* issue){
 
 		if(clock_signal == CLK_HIGH && issue->valid == 1){			
 			printf("decoding: %s",issue->string);
-			decode -> valid = 1;
 			extracted = strtok(issue->string," ");
 			decode->type = extract_type(extracted);
 			extracted = strtok(NULL," ");
@@ -114,12 +113,12 @@ void cpu_decode(instruction* decode, instruction* issue){
 			decode->src2 = extract_register(extracted);
 			}
 			issue -> valid = 0;
+			decode -> valid = 1;
 			nanosleep(&clockspec,NULL);
 		}
 		else
 		if(clock_signal == CLK_LOW )
 			decode-> valid = 0;
-			nanosleep(&clockspec,NULL);
 
 	}
 }
@@ -127,6 +126,31 @@ void cpu_decode(instruction* decode, instruction* issue){
 void cpu_execute(instruction* execute, instruction* decode){
 	int ctr = 0;
 	printf("execute\n");
+	while(1){
+		if(clock_signal == CLK_HALT)break;
+		if(clock_signal == CLK_HIGH && decode->valid == 1){			
+		execute->type = decode-> type;
+		switch(decode->type)
+		{
+			case LDA: 	execute->address = decode->address;break;
+			case STA: 	execute->address = decode->address; break;
+			case ADD: 	printf("Adding %d and %d\n",*(decode->src1),*(decode->src2));
+					execute-> result = *(decode->src1) + *(decode-> src2);
+					execute-> dst = decode-> dst;
+			case SUB: 	printf("Subtracting %d from %d\n",*(decode->src1),*(decode->src2));
+					execute-> result = *(decode->src1) - *(decode-> src2);
+					execute-> dst = decode-> dst;
+			default:	printf("Error in execution;");
+					break;
+		}
+		execute-> valid = 1;
+		decode->valid = 0;
+		nanosleep(&clockspec,NULL);
+		}
+		else
+		if(clock_signal == CLK_LOW )
+			execute-> valid = 0;
+	}
 }
 
 void cpu_memory_access(instruction* memory_access, instruction* execute){
