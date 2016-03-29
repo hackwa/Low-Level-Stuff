@@ -1,0 +1,2 @@
+Compiling: mpic++
+Usage: mpirun -n 4 ./a.out
