@@ -62,95 +62,95 @@ void cpu_issue(FILE *fp){
 
 void cpu_decode(){
 	MPI_Status Stat;
-	instruction decode;
+	MPI_Request Req;
 	char *extracted;
+	char issue[20];
+	int decode[20]={0};
 	while(1)
 	{
-		MPI_Recv(decode.string,20,MPI_CHAR,0,42,MPI_COMM_WORLD,&Stat);
-		printf("decoding: %s",decode.string);
+		MPI_Irecv(GPR,4,MPI_INT,3,42,MPI_COMM_WORLD,&Req);
+		MPI_Recv(issue,20,MPI_CHAR,0,42,MPI_COMM_WORLD,&Stat);
+		printf("decoding: %s",issue);
 		
-		extracted = strtok(decode.string," ");
-		decode.type = extract_type(extracted);
+		extracted = strtok(issue," ");
+		decode[0] = extract_type(extracted);
 		extracted = strtok(NULL," ");
-		decode.dst = extract_register(extracted);
+		decode[1] = extract_register(extracted);
 		extracted = strtok(NULL," ");
-		if (decode.type == LDA || decode.type == STA)
+		if (decode[0] == LDA || decode[0] == STA || decode[0] == MVI)
 		{
-			decode.address = atoi(extracted);
+			decode[2] = atoi(extracted);
 		}
 		else
-		if (decode.type == ADD || decode.type == SUB)
+		if (decode[0] == ADD || decode[0] == SUB)
 		{
-		decode.src1 = extract_register(extracted);
+		decode[2] = GPR[extract_register(extracted)];
 		extracted = strtok(NULL," ");
-		decode.src2 = extract_register(extracted);
+		decode[3] = GPR[extract_register(extracted)];
 		}
-		else
-		if(decode.type == MVI)
-		{
-			decode.result = atoi(extracted);
-		}
+		MPI_Send(decode,20,MPI_INT,2,42,MPI_COMM_WORLD);
 		nanosleep(&clockspec,NULL);
 	}
 }
 
 void cpu_execute(){
-	instruction execute;
+	MPI_Status Stat;
+	int execute[20]={0};
 	printf("execute\n");
-	/*
 	while(1){
-		MPI_Send(issue.string,20,MPI_CHAR,1,42,MPI_COMM_WORLD);
-		if(clock_signal == CLK_HALT)break;
-		if(clock_signal == CLK_HIGH && decode->valid == 1){			
-		execute->type = decode-> type;
-		execute-> dst = decode-> dst;
-		switch(decode->type)
+		MPI_Recv(execute,20,MPI_INT,1,42,MPI_COMM_WORLD,&Stat);
+		switch(execute[0])
 		{
-			case LDA: 	execute->address = decode->address;break;
-			case STA: 	execute->address = decode->address; break;
-			case MVI:	execute-> result = decode -> result;break;
-			case ADD: 	printf("Adding %d and %d\n",*(decode->src1),*(decode->src2));
-					execute-> result = *(decode->src1) + *(decode-> src2);
+			case LDA: 	printf("executing: LDA\n");
+					execute[4] = execute[2];break;
+			case STA: 	printf("executing: STA\n");
+					execute[4] = execute[2];break;
+			case MVI:	printf("executing: MVI\n");
+					execute[4] = execute[2];break;
+			case ADD: 	printf("executing: ADD\n");
+					printf("Adding %d and %d\n",execute[2],execute[3]);
+					execute[4] = execute[2] + execute[3];
 					break;
-			case SUB: 	printf("Subtracting %d from %d\n",*(decode->src1),*(decode->src2));
-					execute-> result = *(decode->src1) - *(decode-> src2);
+			case SUB: 	printf("executing SUB\n");
+					printf("Subtracting %d from %d\n",execute[2],execute[3]);
+					execute[4] = execute[2] - execute[3];
 					break;
-			default:	printf("ERR: Error in execution;%d",decode->type);
+			default:	printf("ERR: Error in execution");
 		}
-		execute-> valid = 1;
-		decode->valid = 0;
+		MPI_Send(execute,20,MPI_INT,3,42,MPI_COMM_WORLD);
 		nanosleep(&clockspec,NULL);
 		}
-		else
-		if(clock_signal == CLK_LOW )
-			execute-> valid = 0;
-	}*/
 }
 
 void cpu_data_access(){
+	MPI_Request Req;
 	printf("data_access\n");
-	/*
+	int data_access[20] = {0};
 	while(1){
-		if(clock_signal == CLK_HALT)break;
-		if(clock_signal == CLK_HIGH && execute->valid == 1){			
-		switch(execute->type)
+		MPI_Status Stat;
+		MPI_Recv(data_access,20,MPI_INT,2,42,MPI_COMM_WORLD,&Stat);
+		switch(data_access[0])
 		{
-			case LDA:	*(execute->dst) = MEMORY[execute->address];break;
-			case STA: 	MEMORY[execute->address] = *(execute->dst);break;
-			case ADD:	*(execute->dst) = execute->result;break;
-			case SUB:	*(execute->dst) = execute->result;break;
-			case MVI:	*(execute->dst) = execute->result;break;
-			default:	printf("ERR: This should not happen");
+			case LDA:	GPR[data_access[1]] = MEMORY[data_access[4]];
+					break;
+			case STA:	MEMORY[data_access[4]] = GPR[data_access[1]];
+					break;
+			case MVI:	GPR[data_access[1]] = data_access[4];
+					break;
+			case ADD:	GPR[data_access[1]] = data_access[4];
+					break;
+			case SUB:	GPR[data_access[1]] = data_access[4];
+					break;
 		}
-		execute->valid=0;
+		MPI_Isend(GPR,4,MPI_INT,1,42,MPI_COMM_WORLD,&Req);
 		nanosleep(&clockspec,NULL);
-		}
-	printf("Execution Complete..CPU and Memory State:\n");
-	printf("R0: %d\tR1: %d\tR2: %d\tR3: %d\n",R0,R1,R2,R3);
-	printf("Memory:\n");
-	for(int i=0;i<MEMSIZE;i++)
-		printf("%d  ",MEMORY[i]);
-	printf("\n");
-	}*/
+		printf("Registers: \n");
+		for(int i=0;i<4;i++)
+			printf("%d ",GPR[i]);
+		printf("\n");
+		printf("Memory: \n");
+		for(int i=0;i<10;i++)
+			printf("%d ",MEMORY[i]);
+		printf("\n");
+	}
 }
-

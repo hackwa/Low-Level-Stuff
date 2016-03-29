@@ -4,8 +4,8 @@
 
 #define MEMSIZE 10
 
-uint32_t R0=0,R1=0,R2=0,R3=0;
-uint32_t MEMORY[MEMSIZE]={0};
+int GPR[4];
+int MEMORY[MEMSIZE]={0};
 
 #define PIPELINE_DEPTH 4
 
