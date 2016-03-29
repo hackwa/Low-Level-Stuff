@@ -1,0 +1,11 @@
+General Purpose Registers Available:
+R0, R1, R2, R3
+
+Memory Locations: 10
+
+Instructions:
+- MVI <Destination Register> Value
+- LDA <Destination Register> Address
+- STA <Source Register> Address
+- ADD <Destination Register> <Source1 Register> <Source2 Register>
+- SUB <Destination Register> <From Register> <This Register>
