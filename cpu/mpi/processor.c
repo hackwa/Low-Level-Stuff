@@ -37,11 +37,12 @@ int main(int argc, char* argv[])
 	{
 		case 0: cpu_issue(fp);
 			break;
+		// This steps reads the register values received from last process
 		case 1: cpu_decode();
 			break;
 		case 2: cpu_execute();
 			break;
-			// Registers and memory access in one step
+		// Registers and memory access in one step
 		case 3: cpu_data_access();
 			break;
 		default: printf("This process does nothing.");
@@ -65,10 +66,12 @@ void cpu_decode(){
 	MPI_Request Req;
 	char *extracted;
 	char issue[20];
-	int decode[20]={0};
+	uint32_t decode[20]={0};
 	while(1)
 	{
-		MPI_Irecv(GPR,4,MPI_INT,3,42,MPI_COMM_WORLD,&Req);
+	// Has to be nonblocking otherwise a deadlock will occur
+		MPI_Irecv(GPR,REGSIZE,MPI_UINT32_T,3,42,MPI_COMM_WORLD,&Req);
+	// Blocking for Synchronization
 		MPI_Recv(issue,20,MPI_CHAR,0,42,MPI_COMM_WORLD,&Stat);
 		printf("decoding: %s",issue);
 		
@@ -88,17 +91,17 @@ void cpu_decode(){
 		extracted = strtok(NULL," ");
 		decode[3] = GPR[extract_register(extracted)];
 		}
-		MPI_Send(decode,20,MPI_INT,2,42,MPI_COMM_WORLD);
+		MPI_Send(decode,20,MPI_UINT32_T,2,42,MPI_COMM_WORLD);
 		nanosleep(&clockspec,NULL);
 	}
 }
 
 void cpu_execute(){
 	MPI_Status Stat;
-	int execute[20]={0};
+	uint32_t execute[20]={0};
 	printf("execute\n");
 	while(1){
-		MPI_Recv(execute,20,MPI_INT,1,42,MPI_COMM_WORLD,&Stat);
+		MPI_Recv(execute,20,MPI_UINT32_T,1,42,MPI_COMM_WORLD,&Stat);
 		switch(execute[0])
 		{
 			case LDA: 	printf("executing: LDA\n");
@@ -117,7 +120,7 @@ void cpu_execute(){
 					break;
 			default:	printf("ERR: Error in execution");
 		}
-		MPI_Send(execute,20,MPI_INT,3,42,MPI_COMM_WORLD);
+		MPI_Send(execute,20,MPI_UINT32_T,3,42,MPI_COMM_WORLD);
 		nanosleep(&clockspec,NULL);
 		}
 }
@@ -125,10 +128,10 @@ void cpu_execute(){
 void cpu_data_access(){
 	MPI_Request Req;
 	printf("data_access\n");
-	int data_access[20] = {0};
+	uint32_t data_access[20] = {0};
 	while(1){
 		MPI_Status Stat;
-		MPI_Recv(data_access,20,MPI_INT,2,42,MPI_COMM_WORLD,&Stat);
+		MPI_Recv(data_access,20,MPI_UINT32_T,2,42,MPI_COMM_WORLD,&Stat);
 		switch(data_access[0])
 		{
 			case LDA:	GPR[data_access[1]] = MEMORY[data_access[4]];
@@ -142,14 +145,14 @@ void cpu_data_access(){
 			case SUB:	GPR[data_access[1]] = data_access[4];
 					break;
 		}
-		MPI_Isend(GPR,4,MPI_INT,1,42,MPI_COMM_WORLD,&Req);
+		MPI_Isend(GPR,REGSIZE,MPI_UINT32_T,1,42,MPI_COMM_WORLD,&Req);
 		nanosleep(&clockspec,NULL);
 		printf("Registers: \n");
-		for(int i=0;i<4;i++)
+		for(int i=0;i<REGSIZE;i++)
 			printf("%d ",GPR[i]);
 		printf("\n");
 		printf("Memory: \n");
-		for(int i=0;i<10;i++)
+		for(int i=0;i<MEMSIZE;i++)
 			printf("%d ",MEMORY[i]);
 		printf("\n");
 	}

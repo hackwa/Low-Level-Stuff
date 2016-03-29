@@ -3,9 +3,10 @@
 #include "stdint.h"
 
 #define MEMSIZE 10
+#define REGSIZE 4
 
-int GPR[4];
-int MEMORY[MEMSIZE]={0};
+uint32_t GPR[REGSIZE];
+uint32_t MEMORY[MEMSIZE]={0};
 
 #define PIPELINE_DEPTH 4
 
