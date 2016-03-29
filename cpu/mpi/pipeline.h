@@ -9,6 +9,11 @@ uint32_t MEMORY[MEMSIZE]={0};
 
 #define PIPELINE_DEPTH 4
 
+#define REG0 0
+#define REG1 1
+#define REG2 2
+#define REG3 3
+
 //Clock
 #define CLK_HIGH 1
 #define CLK_LOW 0
@@ -24,38 +29,38 @@ uint32_t MEMORY[MEMSIZE]={0};
 typedef struct {
 	char string[20];
 	int type;
-	uint32_t * src1;
-	uint32_t * src2;
-	uint32_t * dst;
+	int src1;
+	int src2;
+	int dst;
 	int address;
 	uint32_t result;
 	int valid;
 } instruction;
 
 void cpu_clock();
-void cpu_issue(FILE*,instruction*);
-void cpu_decode(instruction*,instruction*);
-void cpu_execute(instruction*, instruction*);
-void cpu_data_access(instruction*);
+void cpu_issue(FILE*);
+void cpu_decode();
+void cpu_execute();
+void cpu_data_access();
 
 struct timespec clockspec ={
 .tv_sec = 0,
 .tv_nsec = 100000000
 };
 
-uint32_t * extract_register(char* input)
+int extract_register(char* input)
 {
-	if (input == NULL) return NULL;
+	if (input == NULL) return -1;
 	if (strncasecmp(input, "r0", 2) == 0)
-		return &R0;
+		return REG0;
 	if (strncasecmp(input, "r1", 2) == 0)
-		return &R1;
+		return REG1;
 	if (strncasecmp(input, "r2", 2) == 0)
-		return &R2;
+		return REG2;
 	if (strncasecmp(input, "r3", 2) == 0)
-		return &R3;
+		return REG3;
 	printf("ERR: error in register extraction\n");
-	return NULL;
+	return -1;
 }
 
 int extract_type(char* input)

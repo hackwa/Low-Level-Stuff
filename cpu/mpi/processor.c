@@ -8,8 +8,6 @@
 // Be careful of Hazards!
 
 const char *source = "./instructions";
-int clock_signal = CLK_LOW;
-int halt =0;
 
 int main(int argc, char* argv[])
 {
@@ -23,9 +21,6 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	instruction issue;
-	instruction decode;
-	instruction execute;
 	rc=MPI_Init(&argc, &argv);
 
 	if (rc != MPI_SUCCESS) {
@@ -40,109 +35,71 @@ int main(int argc, char* argv[])
 
 	switch(rank)
 	{
-		case 0: cpu_clock();
+		case 0: cpu_issue(fp);
 			break;
-		case 1: cpu_issue(fp,&issue);
+		case 1: cpu_decode();
 			break;
-		case 2: cpu_decode(&decode,&issue);
-			break;
-		case 3: cpu_execute(&execute,&decode);
+		case 2: cpu_execute();
 			break;
 			// Registers and memory access in one step
-		case 4: cpu_data_access(&execute);
+		case 3: cpu_data_access();
 			break;
-		default: printf("Recheck the number of threads");
+		default: printf("This process does nothing.");
 	}
-	printf("Execution Complete..CPU and Memory State:\n");
-	printf("R0: %d\tR1: %d\tR2: %d\tR3: %d\n",R0,R1,R2,R3);
-	printf("Memory:\n");
-	for(int i=0;i<MEMSIZE;i++)
-		printf("%d  ",MEMORY[i]);
-	printf("\n");
 	MPI_Finalize();
 }
 
-// Stop clock PIPELINE_DEPTH cycles after halt is Issued 
-void cpu_clock(){
-	int ctr = 0;
+void cpu_issue(FILE *fp){
+	instruction issue;
 	while(1)
 	{
+		if(fgets(issue.string,sizeof(issue.string),fp)== NULL) break;
+		printf("issue %s",issue.string);
+		MPI_Send(issue.string,20,MPI_CHAR,1,42,MPI_COMM_WORLD);
 		nanosleep(&clockspec,NULL);
-		clock_signal = clock_signal ^ 1;
-		printf("clock %d\n",clock_signal);
-		if (halt == 1 && ctr++ == 2*PIPELINE_DEPTH)
-			break;
 	}
-	clock_signal = CLK_HALT;
 }
 
-void cpu_issue(FILE *fp, instruction *issue){
-	int flag = 0;
-	while(1)
-	{
-		if(clock_signal == CLK_HIGH && flag == 1){
-		if(fgets(issue->string,sizeof(issue->string),fp)== NULL) break;
-		issue-> valid = 1;
-		//printf("%s",issue->string);
-		flag = 0;
-		nanosleep(&clockspec,NULL);
-		}
-		else 
-// Decode shouldn't start until next instruction is issued
-		if (clock_signal == CLK_LOW){
-			issue -> valid = 0;
-			flag =1;
-			nanosleep(&clockspec,NULL);
-		}
-	}
-	halt = 1;
-	printf("Halting Pipeline in %d cycles\n",PIPELINE_DEPTH);
-}
-
-void cpu_decode(instruction* decode, instruction* issue){
+void cpu_decode(){
+	MPI_Status Stat;
+	instruction decode;
 	char *extracted;
 	while(1)
 	{
-		if(clock_signal == CLK_HALT)break;
-
-		if(clock_signal == CLK_HIGH && issue->valid == 1){			
-			printf("decoding: %s",issue->string);
-			extracted = strtok(issue->string," ");
-			decode->type = extract_type(extracted);
-			extracted = strtok(NULL," ");
-			decode->dst = extract_register(extracted);
-			extracted = strtok(NULL," ");
-			if (decode->type == LDA || decode->type == STA)
-			{
-				decode->address = atoi(extracted);
-				//printf("decoded address:%d",decode->address);
-			}
-			else
-			if (decode->type == ADD || decode->type == SUB)
-			{
-			decode->src1 = extract_register(extracted);
-			extracted = strtok(NULL," ");
-			decode->src2 = extract_register(extracted);
-			}
-			else
-			if(decode->type == MVI)
-			{
-				decode -> result = atoi(extracted);
-			}
-			issue -> valid = 0;
-			decode -> valid = 1;
-			nanosleep(&clockspec,NULL);
+		MPI_Recv(decode.string,20,MPI_CHAR,0,42,MPI_COMM_WORLD,&Stat);
+		printf("decoding: %s",decode.string);
+		
+		extracted = strtok(decode.string," ");
+		decode.type = extract_type(extracted);
+		extracted = strtok(NULL," ");
+		decode.dst = extract_register(extracted);
+		extracted = strtok(NULL," ");
+		if (decode.type == LDA || decode.type == STA)
+		{
+			decode.address = atoi(extracted);
 		}
 		else
-		if(clock_signal == CLK_LOW )
-			decode-> valid = 0;
-
+		if (decode.type == ADD || decode.type == SUB)
+		{
+		decode.src1 = extract_register(extracted);
+		extracted = strtok(NULL," ");
+		decode.src2 = extract_register(extracted);
+		}
+		else
+		if(decode.type == MVI)
+		{
+			decode.result = atoi(extracted);
+		}
+		nanosleep(&clockspec,NULL);
 	}
 }
 
-void cpu_execute(instruction* execute, instruction* decode){
+void cpu_execute(){
+	instruction execute;
 	printf("execute\n");
+	/*
 	while(1){
+		MPI_Send(issue.string,20,MPI_CHAR,1,42,MPI_COMM_WORLD);
 		if(clock_signal == CLK_HALT)break;
 		if(clock_signal == CLK_HIGH && decode->valid == 1){			
 		execute->type = decode-> type;
@@ -167,11 +124,12 @@ void cpu_execute(instruction* execute, instruction* decode){
 		else
 		if(clock_signal == CLK_LOW )
 			execute-> valid = 0;
-	}
+	}*/
 }
 
-void cpu_data_access(instruction* execute){
+void cpu_data_access(){
 	printf("data_access\n");
+	/*
 	while(1){
 		if(clock_signal == CLK_HALT)break;
 		if(clock_signal == CLK_HIGH && execute->valid == 1){			
@@ -187,6 +145,12 @@ void cpu_data_access(instruction* execute){
 		execute->valid=0;
 		nanosleep(&clockspec,NULL);
 		}
-	}
+	printf("Execution Complete..CPU and Memory State:\n");
+	printf("R0: %d\tR1: %d\tR2: %d\tR3: %d\n",R0,R1,R2,R3);
+	printf("Memory:\n");
+	for(int i=0;i<MEMSIZE;i++)
+		printf("%d  ",MEMORY[i]);
+	printf("\n");
+	}*/
 }
 
