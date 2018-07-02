@@ -5,3 +5,4 @@
 - Hashing - Implementation of Python dict object
 - hwpqueue - Single Clock Hardware Pqueue
 - Pqueue - Priority Queue using MinHeap
+- task pipeline - A task queue with one producer thread and multiple consumer threads
