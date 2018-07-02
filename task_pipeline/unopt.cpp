@@ -55,7 +55,7 @@ int main()
     for (i = 0; i < 100; i++) {
         {
             lock_guard<std::mutex> locker(mu);
-            task_q.push_back( move(packaged_task< _llu() > ( bind(fib,i) )) );
+            task_q.push_back( move ( packaged_task<_llu()>(bind(fib,i)) ));
         }
         cond.notify_one();
     }
