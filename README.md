@@ -6,3 +6,4 @@
 - hwpqueue - Single Clock Hardware Pqueue
 - Pqueue - Priority Queue using MinHeap
 - task pipeline - A task queue with one producer thread and multiple consumer threads
+- interpreter - javascript interpreter (in progress)
