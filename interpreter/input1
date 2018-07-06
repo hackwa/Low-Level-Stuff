@@ -1,0 +1,75 @@
+/*
+ * Ascii Encoding
+ * Characters - 48->90, 97->122
+ * Whitespace - 32,9
+ * Allowed - 33 to 126 minus Characters and Whitespace
+ */
+
+#include"tokenizer.h"
+
+std::vector<token*> tv;
+
+void addToken(int s, int e, std::string& line, tokenType ttype)
+{
+	token * T = new token;
+	T->data = line.substr(s,e-s+1);
+	T->type = ttype;
+	tv.push_back(T);
+	std::cout<<"Token : "<<T->data<<std::endl;
+}
+
+tokenType getCharType(char c)
+{
+	if (c < 32 || c == 127)
+		throw 1;
+	if ((c >= 65 && c <=90) || (c >= 97 && c <= 122) || (c>=48 && c<=57))
+		return character;
+	if (c== 32 || c==9)
+		return whitespace;
+	return special;
+}
+
+void tokenize(std::string& line)
+{
+	int i=0,linend,tokstart=0;
+	tokenType prev=whitespace, cur;
+
+	linend = line.length() - 1;
+	// Find the first non whitespace character
+	while(line[i]==32 || line[i]==9){
+		i++;
+	}
+
+	// Start Scan
+	tokstart = i;
+	for (; i <= linend; ++i){
+		cur = getCharType(line[i]);
+		//std::cout<<line[i] << cur<<std::endl;
+
+		
+
+		switch(cur){
+			case whitespace:
+				if (prev != whitespace && prev != special)
+					addToken(tokstart,i-1,line,cur);
+				break;
+
+			case character:
+				if (prev != character)
+					tokstart = i;
+				break;
+
+			case special:
+				if (prev == character)
+					addToken(tokstart,i-1,line,prev);
+				addToken(i,i,line,cur);
+				break;
+
+			default:
+				throw "Error in tokenize";
+		}
+		prev = cur;
+	}
+	if (prev == character)
+				addToken(tokstart,i,line,character);
+}

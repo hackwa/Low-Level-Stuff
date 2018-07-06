@@ -1,0 +1,106 @@
+Meow
+keyword : for
+grouping symbol : (
+identifier : i
+operator : =
+int : 0
+operator : ;
+identifier : i
+operator : >
+int : 10
+operator : ;
+identifier : i
+operator : ++
+grouping symbol : )
+identifier : int
+identifier : a
+operator : =
+int : 0
+operator : ;
+comment : int a=0;
+identifier : int
+identifier : birthday
+operator : !=
+int : 1991
+identifier : string
+identifier : spring
+operator : =
+string : You 'too'!
+identifier : int
+identifier : a
+operator : =
+int : 0
+operator : ;
+identifier : float
+identifier : floo
+operator : =
+float : 4.5
+identifier : var
+identifier : floo
+operator : =
+float : 4.5
+operator : +
+float : 2.0
+identifier : float
+identifier : floo
+operator : =
+float : 4.5
+operator : ;
+identifier : string
+identifier : heha
+operator : =
+string : hooha
+operator : ;
+identifier : console
+operator : .
+identifier : log
+grouping symbol : (
+string : meow
+grouping symbol : )
+identifier : var
+identifier : a
+operator : =
+string : 123
+identifier : var
+identifier : b
+operator : =
+float : 12.3
+identifier : var
+identifier : c
+operator : =
+int : 32
+identifier : c
+operator : =
+identifier : b
+operator : *
+int : 3
+identifier : b
+operator : +=
+string : meow
+identifier : b
+operator : +=
+string : meow
+keyword : function
+identifier : hula
+grouping symbol : (
+grouping symbol : )
+comment : THis is another comment
+keyword : for
+grouping symbol : (
+identifier : i
+operator : =
+int : 0
+operator : ;
+identifier : i
+operator : >
+int : 10
+operator : ;
+identifier : i
+operator : ++
+grouping symbol : )
+keyword : if
+grouping symbol : (
+identifier : c
+operator : >=
+identifier : d
+grouping symbol : )
